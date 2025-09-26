@@ -1,0 +1,71 @@
+/* Reset + sizing */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+/* Page uses full viewport height */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: lightgray;
+}
+
+/* Header stays fixed height */
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  border-bottom: 2px solid black;
+}
+
+/* Main takes the remaining height */
+.main {
+  display: flex;
+  flex: 1;               /* <-- fills remaining space */
+}
+
+/* Sidebar stretches to the main’s height */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 2px solid black;
+  width: 280px;
+  transition: 200ms ease;
+  /* no height here */
+  text-align: center;
+}
+
+.sidebar.closed {
+  width: 0;
+  /* hide content */
+  overflow: hidden;
+  border-right: 0;
+}
+
+/* Content */
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.toggle-btn {
+  position: absolute;
+  color: black;
+  align-items: top;
+  top: 8px;
+  left: 7px;
+  cursor: pointer;
+  font-size: 18px;
+  background-color: transparent;
+  /* no border */
+  border: none;
+  border-radius: 6px;
+  border-color: black;
+}
+.toggle-btn:hover { background: hwb(0 78% 21%); }
