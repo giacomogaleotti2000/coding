@@ -118,15 +118,28 @@ class ConnectFourEnv():
         return self.board.copy(), 0, False, {}
 
     def get_opponent_action(self, model):
+        # 1. Prepare the board (Flip perspective)
         board_for_opp = self.board * -1 
-        state_t = torch.tensor(board_for_opp, dtype=torch.float32).unsqueeze(0).view(1, 1, 6, 7) # Ensure shape
         
+        # 2. Create the tensor (defaults to CPU)
+        state_t = torch.tensor(board_for_opp, dtype=torch.float32).unsqueeze(0).view(1, 1, 6, 7)
+        
+        # 3. CRITICAL FIX: Move tensor to the same device as the model (CPU or GPU)
+        # We check the device of the first parameter of the model
+        device = next(model.parameters()).device
+        state_t = state_t.to(device)
+        
+        # 4. Get the move
         with torch.no_grad():
             q_vals = model(state_t)
             valid_moves = self.available_actions_idx()
+            
+            # Mask invalid moves
             mask = torch.full_like(q_vals, -float('inf'))
             mask[0, valid_moves] = q_vals[0, valid_moves]
+            
             action = mask.max(1)[1].item()
+            
         return action
 
     def render(self):

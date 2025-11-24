@@ -5,7 +5,7 @@ import time
 
 
 # --- CONFIGURATION ---
-MODEL_PATH = "connect4_dqn_v1.pth" # Ensure this matches your save file
+MODEL_PATH = "connect4_dqn_v8.pth" # Ensure this matches your save file
 HUMAN = 1
 AI = -1
 
@@ -75,7 +75,7 @@ def play():
     print("Loading Brain...")
     try:
         model = QNConnectFour(output_dim=7)
-        model.load_state_dict(torch.load(MODEL_PATH))
+        model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
         model.eval() # Set to evaluation mode
     except FileNotFoundError:
         print(f"Error: Could not find {MODEL_PATH}. Did you train and save it?")
