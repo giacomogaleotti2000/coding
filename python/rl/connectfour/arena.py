@@ -121,4 +121,4 @@ def arena_battle(path_model_1, path_model_2, num_games=1000):
 # --- Example Usage ---
 # Ensure you provide the correct paths to your .pth files
 if __name__ == "__main__":    
-    arena_battle("connect4_dqn_v1.pth", "connect4_dqn_v7.pth", num_games=1000)
+    arena_battle("connect4_dqn_v5.pth", "connect4_dqn_v7.pth", num_games=1000)

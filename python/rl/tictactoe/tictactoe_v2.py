@@ -1,4 +1,31 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
 import numpy as np
+import random
+from collections import deque
+
+class QNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(9, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, 9)
+        )
+        self._init()
+
+    def _init(self):
+        for m in self.net:
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_uniform_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+        nn.init.uniform_(self.net[-1].weight, -1e-3, 1e-3)
+
+    def forward(self, x):
+        return self.net(x)
 
 class TicTacToeEnv:
     def __init__(self):
@@ -50,28 +77,19 @@ class TicTacToeEnv:
             return self.board.copy(), -1.0, True
 
         return self.board.copy(), r, d
+    
+class ReplayBuffer:
+    def __init__(self, capacity=10000):
+        self.buffer = deque(maxlen=capacity)
 
-from torch import nn
+    def push(self, state, action, reward, next_state, done):
+        self.buffer.append((state, action, reward, next_state, done))
 
-# --- 2. Model ---
-class QNetwork(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(9, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 9)
-        )
-        self._init()
+    def sample(self, batch_size):
+        batch = random.sample(self.buffer, batch_size)
+        state, action, reward, next_state, done = zip(*batch)
+        return (np.array(state), action, reward, np.array(next_state), done)
 
-    def _init(self):
-        for m in self.net:
-            if isinstance(m, nn.Linear):
-                nn.init.kaiming_uniform_(m.weight, nonlinearity="relu")
-                nn.init.zeros_(m.bias)
-        nn.init.uniform_(self.net[-1].weight, -1e-3, 1e-3)
-
-    def forward(self, x):
-        return self.net(x)
+    def __len__(self):
+        return len(self.buffer)
+    

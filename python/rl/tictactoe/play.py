@@ -1,10 +1,21 @@
-from tictactoe import TicTacToeEnv, QNTicTacToe
+from tictactoe_v2 import TicTacToeEnv, QNetwork
 import torch
 import numpy as np
 
-model = QNTicTacToe()
-model.load_state_dict(torch.load("model_1.pth"))
-model.eval()
+# Load the trained model
+try:
+    model = QNetwork()
+    model.load_state_dict(torch.load("model_v8.pth"))
+    model.eval()
+    print("🤖 Model 'model_v8.pth' loaded successfully.")
+except FileNotFoundError:
+    print("❌ ERROR: Could not find 'model_v8.pth'. Ensure the trained model file is in the current directory.")
+    exit()
+except Exception as e:
+    print(f"❌ ERROR loading model: {e}")
+    exit()
+
+# --- Helper Functions (Provided by User) ---
 
 def print_board(board):
     """Pretty print the board"""
@@ -45,10 +56,24 @@ def check_winner(board):
     return None  # game continues
 
 def model_move(board, model):
-    """Model chooses best move"""
+    """Model chooses best move by selecting the action with the highest Q-value"""
+    # Convert numpy board state to a PyTorch tensor
+    state_tensor = torch.tensor(board, dtype=torch.float32).unsqueeze(0)
+    
     with torch.no_grad():
-        q_vals = model(torch.tensor(board, dtype=torch.float32))
-        action = int(torch.argmax(q_vals).item())
+        q_vals = model(state_tensor)
+        
+        # Mask illegal moves
+        available_actions = np.where(board == 0)[0]
+        
+        # Set Q-values for occupied positions to negative infinity 
+        # to ensure they are not selected, even if the model predicts a high Q-value.
+        full_q = q_vals[0].numpy()
+        mask = np.ones(9) * -np.inf
+        mask[available_actions] = full_q[available_actions]
+        
+        action = int(np.argmax(mask))
+
     return action
 
 def play_game():
@@ -59,20 +84,30 @@ def play_game():
     print("\n" + "="*40)
     print("NEW GAME!")
     print("="*40)
-    print("You are 'O', Model is 'X'")
+    print("You are 'O' (-1). Model is 'X' (1).")
     print_board_positions()
     
     choice = input("Do you want to go first? (y/n): ").strip().lower()
     human_turn = (choice == 'y')
     
+    # If model starts, it makes the first move before the loop
+    # if not human_turn:
+    #     move = model_move(board, model)
+    #     board[move] = 1
+    #     print(f"Model played position {move}")
+    
     print_board(board)
     
-    while True:
+    while check_winner(board) is None:
         if human_turn:
             # Human's turn
             while True:
                 try:
-                    move = int(input("Your move (0-8): "))
+                    move = input("Your move (0-8): ")
+                    if move.lower() == 'q':
+                         return 'quit'
+                    move = int(move)
+                    
                     if move < 0 or move > 8:
                         print("Please enter a number between 0 and 8")
                         continue
@@ -81,14 +116,13 @@ def play_game():
                         continue
                     break
                 except ValueError:
-                    print("Please enter a valid number")
+                    print("Please enter a valid number (0-8) or 'q' to quit.")
             
             board[move] = -1  # Human is -1 (O)
             print(f"\nYou played position {move}")
             print_board(board)
             
-            result = check_winner(board)
-            if result is not None:
+            if check_winner(board) is not None:
                 break
             
             human_turn = False
@@ -100,13 +134,13 @@ def play_game():
             print(f"Model played position {move}")
             print_board(board)
             
-            result = check_winner(board)
-            if result is not None:
+            if check_winner(board) is not None:
                 break
             
             human_turn = True
     
     # Game over
+    result = check_winner(board)
     if result == 1:
         print("🤖 Model (X) wins!")
     elif result == -1:
@@ -116,32 +150,36 @@ def play_game():
     
     return result
 
-# Main game loop
-print("\n" + "="*40)
-print("TIC-TAC-TOE vs AI")
-print("="*40)
+# --- Main Game Loop ---
+if __name__ == "__main__":
+    print("\n" + "="*40)
+    print("TIC-TAC-TOE vs DEEP Q-NETWORK AI")
+    print("="*40)
 
-wins = 0
-losses = 0
-draws = 0
+    wins = 0
+    losses = 0
+    draws = 0
 
-while True:
-    result = play_game()
-    
-    if result == -1:
-        wins += 1
-    elif result == 1:
-        losses += 1
-    else:
-        draws += 1
-    
-    print(f"\nScore - You: {wins}, Model: {losses}, Draws: {draws}")
-    
-    play_again = input("\nPlay again? (y/n): ").strip().lower()
-    if play_again != 'y':
-        break
+    while True:
+        result = play_game()
+        
+        if result == 'quit':
+            break
 
-print("\n" + "="*40)
-print("Thanks for playing!")
-print(f"Final Score - You: {wins}, Model: {losses}, Draws: {draws}")
-print("="*40)
+        if result == -1:
+            wins += 1
+        elif result == 1:
+            losses += 1
+        else:
+            draws += 1
+        
+        print(f"\nScoreboard: You: {wins}, Model: {losses}, Draws: {draws}")
+        
+        play_again = input("\nPlay again? (y/n/q): ").strip().lower()
+        if play_again != 'y':
+            break
+
+    print("\n" + "="*40)
+    print("Thanks for playing!")
+    print(f"Final Score - You: {wins}, Model: {losses}, Draws: {draws}")
+    print("="*40)
