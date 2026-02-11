@@ -1,0 +1,35 @@
+# Copy this file to terraform.tfvars and adjust values.
+
+location            = "italynorth"
+resource_group_name = "rg-foundry-architecture-lab"
+name_prefix         = "fdryl"
+
+# Restrict SSH to your own public IP /32.
+ssh_allowed_cidr = "203.0.113.10/32"
+
+admin_username = "azureuser"
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC7hLRzsQAdiD6NBfD9xS01u+9qBMwv1qxr2w1XysIARws16RzmLQ/8GvEPaHvuoSYytXKkOGdtvzAsR4LS2X4NZFch58SGS/aVlEWGnWeQ8qttcUYWGrS7eQoxeUsb8oZRo9xNePF9+w8lDwnaM3VJTmHNnkl4S+5npHn+e44Xk1QK75W6jAkzvcp0Ed8UHfnA0S20P/KXMe5MM+FYsbo2G05uIHFBfhgkPQ3lJQ9yQDV4HXVeieMGKBCa6tM272sy4tPoolqRxxHkagyRwh8JLRrN/yUberyMSgzGHWYwM3Q5yiTMOwIkjvb1uuJShCxASER0LBZHRDcjEfylsExcTQNp0FrkQY6WHpoQWiXqhHR0WVksOYhBs7FIDW1zVgExJWVAN1VL7Lxp5Wu8NMObzWZT0hWEsj/GMTWjEwb7t+/uVk2+u4AZ6tsKc15EUBJLJPHQu6N79lkmAznAWueq/NR7V6yUxSjWUjHup3uLBV3hLoFOI6553MY2i2mIwPbs1mea0MiACluRuh7VWUtOSQ8KYKccXTBcA5BYFbi5Jhhow+w2UlAPKTwC/XAYgnaB1RXnEXfbJjAr081pZpQEnM6ilqTdh+jIhttLYDqTgDKuMpWOtEXIsCeyuS629f1y2O117cwG0rRp/Wf9Qd3gkvQI4vxZgcn3jzsZl1AJ6w== giacomogaleotti81@gmail.com"
+
+# Cheapest practical defaults for testing
+vm_size         = "Standard_B1s"
+search_sku      = "basic"
+ai_services_sku = "S0"
+
+create_foundry_project       = true
+foundry_project_name         = "project"
+foundry_project_display_name = "project"
+foundry_project_description  = "Private networking lab project"
+
+# Enable only after checking quota/model availability in your region
+# deploy_model = true
+# model_deployment_name = "gpt-4o"
+# model_name = "gpt-4o"
+# model_version = "2024-11-20"
+# model_sku_name = "GlobalStandard"
+# model_capacity = 1
+
+tags = {
+  project = "foundry-architecture"
+  env     = "lab"
+  owner   = "your-name"
+}
