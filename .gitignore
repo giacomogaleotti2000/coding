@@ -5,3 +5,4 @@
 *.pth
 *CLAUDE.md
 *.env
+*.python-version
