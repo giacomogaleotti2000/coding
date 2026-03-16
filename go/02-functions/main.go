@@ -37,4 +37,5 @@ func main() {
 	// third example
 	x, y := coords()
 	fmt.Printf("\nCoords: x: %f, y: %f\n", x, y)
+
 }

@@ -23,7 +23,7 @@ type factory_quiker struct {
 	production_line int
 }
 
-// 4. IMPORTANT --> go doesn't have the structs like python does, but the way it functions is similar.
+// 4. IMPORTANT --> go doesn't have the methods like python does (it has structs only), but the way it function with methods is shown here in this example.
 type user struct {
 	username string
 	password string
