@@ -12,6 +12,14 @@ func duplicate_name(nameA string) (string, string) {
 	return nameA, nameA
 }
 
+// 3. consider that stuff is done automatically, for example in this function nothing is inside but two floats are returned
+// this is still not reccomended as implicit stuff is harder to read and to understand later on.
+func coords() (x float32, y float64) {
+	// x and y are initialized at zero both
+
+	return // the x and y are automatically returned if not specified
+}
+
 func main() {
 
 	// first example of functions
@@ -26,4 +34,7 @@ func main() {
 	name1, name2 := duplicate_name(name)
 	fmt.Printf("Duplicated name: %s %s\n", name1, name2)
 
+	// third example
+	x, y := coords()
+	fmt.Printf("\nCoords: x: %f, y: %f\n", x, y)
 }
