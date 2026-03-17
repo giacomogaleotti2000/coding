@@ -521,5 +521,15 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def parse_args() -> argparse.Namespace:
+    # Kaggle/Jupyter injects extra kernel arguments (for example `-f <connection.json>`).
+    # We ignore unknown args so the script can be run unchanged in notebook cells.
+    parser = build_parser()
+    args, unknown = parser.parse_known_args()
+    if unknown:
+        print(f"Ignoring notebook arguments: {' '.join(unknown)}")
+    return args
+
+
 if __name__ == "__main__":
-    train(build_parser().parse_args())
+    train(parse_args())
