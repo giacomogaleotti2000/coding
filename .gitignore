@@ -6,3 +6,6 @@
 *CLAUDE.md
 *.env
 *.python-version
+*.gocache
+.venv/
+.ipynb_checkpoints
