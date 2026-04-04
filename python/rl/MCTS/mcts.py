@@ -10,7 +10,6 @@ import numpy as np
 # 2. Expansion (to be applied when the current node is not fully expanded still)
 # 3. Simulation (random moves used to evaluate the current node and those above - be careful to flipping signs properly)
 # 4. Backpropagation (values update starting from the current node the then going upwards - be careful to flipping signs properly)
-#
 class Node:
     def __init__(self, game, args, state, parent=None, action_taken=None):
         self.game = game

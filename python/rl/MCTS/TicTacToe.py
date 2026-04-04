@@ -55,3 +55,14 @@ class Game:
 
     def change_perspective(self, state: np.ndarray, player: int):
         return state * player
+
+    def get_encoded_state(self, state: np.ndarray):
+        encoded_state = np.stack(
+            (
+                state == -1,
+                state == 0,
+                state == 1,
+            )  # creating three layers, with just 1 and 0s, where we track each value (0,1,-1)
+        ).astype(np.float32)
+
+        return encoded_state
