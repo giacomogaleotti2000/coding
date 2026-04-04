@@ -3,6 +3,7 @@ import math
 
 import numpy as np
 
+
 # Node class indicating a single node of the tree search
 #
 # 1. Simulation (where UCB is applied when the current node is fully expanded)
@@ -21,11 +22,23 @@ class Node:
         self.children = []
         self.expandable_moves = game.get_valid_moves(state)
 
-        self.visit_count = 0
         self.value_sum = 0
+        self.visit_count = 0
 
     def is_fully_expanded(self):
         return np.sum(self.expandable_moves) == 0 and len(self.children) > 0
+
+    def expand(self):
+        action = np.random.choice(np.where(self.expandable_moves == 1)[0])
+        self.expandable_moves[action] = 0
+
+        child_state = self.state.copy()
+        child_state = self.game.get_next_state(child_state, action, 1)
+        child_state = self.game.change_perspective(child_state, player=-1)
+
+        child = Node(self.game, self.args, child_state, self, action)
+        self.children.append(child)
+        return child
 
     def get_ucb(self, child):
         q_value = 1 - ((child.value_sum / child.visit_count) + 1) / 2
@@ -45,18 +58,6 @@ class Node:
 
         return best_child
 
-    def expand(self):
-        action = np.random.choice(np.where(self.expandable_moves == 1)[0])
-        self.expandable_moves[action] = 0
-
-        child_state = self.state.copy()
-        child_state = self.game.get_next_state(child_state, action, 1)
-        child_state = self.game.change_perspective(child_state, player=-1)
-
-        child = Node(self.game, self.args, child_state, self, action)
-        self.children.append(child)
-        return child
-
     def simulate(self):
         value, is_terminal = self.game.get_value_and_terminated(
             self.state, self.action_taken
@@ -70,7 +71,9 @@ class Node:
         rollout_player = 1
         while True:
             valid_moves = self.game.get_valid_moves(rollout_state)
-            action = np.random.choice(np.where(valid_moves == 1)[0])
+            action = np.random.choice(  # here is where random selection is made
+                np.where(valid_moves == 1)[0]
+            )
             rollout_state = self.game.get_next_state(
                 rollout_state, action, rollout_player
             )
@@ -95,7 +98,7 @@ class Node:
             self.parent.backpropagate(value)
 
 
-# Monte Carlo Tree Search Class that executes for each search out of the args["num_searches"] all the Tree and Node steps
+# Monte Carlo Tree Search looking, from the starting Node (state in the end) the best possible action - with random picking in the selection for now
 class MCTS:
     def __init__(self, game, args: dict):
         self.game = game
