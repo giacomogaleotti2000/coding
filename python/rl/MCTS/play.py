@@ -1,14 +1,37 @@
-import numpy as np
+from pathlib import Path
 
+import numpy as np
+import torch
+
+from AlphaMCTS import AlphaMCTS, ResNet
 from ConnectFour import Game
-from MCTS import MCTS
 
 
 def is_connect_four_like(game: Game) -> bool:
     return (
-        game.action_size == game.col_number
-        and game.action_size != game.row_number * game.col_number
+        game.action_size == game.column_count
+        and game.action_size != game.row_count * game.column_count
     )
+
+
+def get_latest_checkpoint() -> Path:
+    checkpoints = sorted(
+        Path(__file__).resolve().parent.glob("model_*.pt"),
+        key=lambda path: int(path.stem.split("_")[1]),
+    )
+    if not checkpoints:
+        raise FileNotFoundError(
+            "No trained model checkpoints found. Train the model first."
+        )
+    return checkpoints[-1]
+
+
+def load_trained_model(game: Game, checkpoint_path: Path) -> ResNet:
+    model = ResNet(game, 4, 64)
+    state_dict = torch.load(checkpoint_path, map_location="cpu")
+    model.load_state_dict(state_dict)
+    model.eval()
+    return model
 
 
 def print_board(game: Game, state: np.ndarray) -> None:
@@ -22,7 +45,7 @@ def print_board(game: Game, state: np.ndarray) -> None:
         print(" ".join(str(i) for i in range(game.action_size)))
     else:
         positions = np.arange(game.action_size).reshape(
-            game.row_number, game.col_number
+            game.row_count, game.column_count
         )
         for row in positions:
             print(" ".join(str(x) for x in row))
@@ -50,6 +73,8 @@ def human_move(game: Game, state: np.ndarray) -> int:
         except ValueError:
             print(invalid_msg)
             continue
+        except EOFError as exc:
+            raise SystemExit("\nInput closed. Exiting game.") from exc
 
         if action < 0 or action >= game.action_size:
             print(range_msg)
@@ -62,7 +87,7 @@ def human_move(game: Game, state: np.ndarray) -> int:
         return action
 
 
-def mcts_move(game: Game, mcts: MCTS, state: np.ndarray, player: int):
+def ai_move(game: Game, mcts: AlphaMCTS, state: np.ndarray, player: int):
     neutral_state = game.change_perspective(state.copy(), player)
     action_probs = mcts.search(neutral_state)
     action = int(np.argmax(action_probs))
@@ -74,26 +99,32 @@ def print_action_probs(game: Game, probs: np.ndarray) -> None:
     if is_connect_four_like(game):
         print(probs)
     else:
-        print(probs.reshape(game.row_number, game.col_number))
+        print(probs.reshape(game.row_count, game.column_count))
     print()
 
 
 def main() -> None:
     game = Game()
+    checkpoint_path = get_latest_checkpoint()
+    model = load_trained_model(game, checkpoint_path)
     args = {
-        "C": 1.41,
+        "C": 2,
         "num_searches": 1000,
     }
-    mcts = MCTS(game, args)
+    mcts = AlphaMCTS(game, args, model)
 
     state = game.get_initial_state()
 
-    answer = input("Do you want to play first? [y/n]: ").strip().lower()
+    try:
+        answer = input("Do you want to play first? [y/n]: ").strip().lower()
+    except EOFError as exc:
+        raise SystemExit("\nInput closed before the game started.") from exc
     human_player = 1 if answer in {"y", "yes"} else -1
     ai_player = game.get_opponent(human_player)
     player = 1
 
-    print("\nYou are", "X" if human_player == 1 else "O")
+    print(f"\nLoaded checkpoint: {checkpoint_path.name}")
+    print("You are", "X" if human_player == 1 else "O")
     print("AI is", "X" if ai_player == 1 else "O")
 
     while True:
@@ -106,7 +137,7 @@ def main() -> None:
             else:
                 print(f"You played: {action}\n")
         else:
-            action, probs = mcts_move(game, mcts, state, ai_player)
+            action, probs = ai_move(game, mcts, state, ai_player)
             if is_connect_four_like(game):
                 print(f"AI played column: {action}")
             else:

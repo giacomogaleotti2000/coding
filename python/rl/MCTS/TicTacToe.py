@@ -7,19 +7,19 @@ import numpy as np
 
 class Game:
     def __init__(self) -> None:
-        self.row_number = 3
-        self.col_number = 3
-        self.action_size = self.row_number * self.col_number
+        self.row_count = 3
+        self.column_count = 3
+        self.action_size = self.row_count * self.column_count
 
     def get_initial_state(self) -> np.ndarray:
-        return np.zeros((self.row_number, self.col_number))
+        return np.zeros((self.row_count, self.column_count))
 
     def get_valid_moves(self, state: np.ndarray):
         return (state.reshape(-1) == 0).astype(int)
 
     def get_next_state(self, state: np.ndarray, action: int, player: int) -> np.ndarray:
-        row = action // self.row_number
-        col = action % self.col_number
+        row = action // self.row_count
+        col = action % self.column_count
         state[row, col] = player
         return state
 
@@ -27,15 +27,15 @@ class Game:
         if action is None:
             return False
 
-        row = action // self.row_number
-        col = action % self.col_number
+        row = action // self.row_count
+        col = action % self.column_count
         player = state[row, col]
 
         check = (
-            np.sum(state[row, :]) == player * self.col_number
-            or np.sum(state[:, col]) == player * self.row_number
-            or np.sum(np.diag(state)) == player * self.row_number
-            or np.sum(np.diag(np.flip(state, axis=0))) == player * self.row_number
+            np.sum(state[row, :]) == player * self.column_count
+            or np.sum(state[:, col]) == player * self.row_count
+            or np.sum(np.diag(state)) == player * self.row_count
+            or np.sum(np.diag(np.flip(state, axis=0))) == player * self.row_count
         )
 
         return check

@@ -7,18 +7,18 @@ import numpy as np
 
 class Game:
     def __init__(self) -> None:
-        self.row_number = 6
-        self.col_number = 7
-        self.action_size = self.col_number
+        self.row_count = 6
+        self.column_count = 7
+        self.action_size = self.column_count
 
     def get_initial_state(self) -> np.ndarray:
-        return np.zeros((self.row_number, self.col_number))
+        return np.zeros((self.row_count, self.column_count))
 
     def get_valid_moves(self, state: np.ndarray):
         return (state[0, :] == 0).astype(int)
 
     def get_next_state(self, state: np.ndarray, action: int, player: int) -> np.ndarray:
-        for row in range(self.row_number - 1, -1, -1):
+        for row in range(self.row_count - 1, -1, -1):
             if state[row, action] == 0:
                 state[row, action] = player
                 break
@@ -30,7 +30,7 @@ class Game:
 
         # Find the row of the last piece played in this column
         row = None
-        for r in range(self.row_number):
+        for r in range(self.row_count):
             if state[r, action] != 0:
                 row = r
                 break
@@ -45,8 +45,8 @@ class Game:
 
             r, c = row + delta_row, action + delta_col
             while (
-                0 <= r < self.row_number
-                and 0 <= c < self.col_number
+                0 <= r < self.row_count
+                and 0 <= c < self.column_count
                 and state[r, c] == player
             ):
                 count += 1
@@ -55,8 +55,8 @@ class Game:
 
             r, c = row - delta_row, action - delta_col
             while (
-                0 <= r < self.row_number
-                and 0 <= c < self.col_number
+                0 <= r < self.row_count
+                and 0 <= c < self.column_count
                 and state[r, c] == player
             ):
                 count += 1
